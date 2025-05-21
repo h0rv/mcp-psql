@@ -114,3 +114,20 @@ async def get_table_schema(table_name: str) -> str:
 @mcp.tool(description="Get the schema of tables in the database")
 async def get_table_schemas(table_names: list[str]) -> str:
     return [conn.get_table_schema(table_name) for table_name in table_names]
+
+
+def main():
+    import argparse
+
+    args = argparse.ArgumentParser()
+    args.add_argument("--transport", type=str, default="stdio")
+    args.add_argument("--port", type=int, default=8000)
+    args = args.parse_args()
+
+    mcp.run(
+        transport=args.transport,
+    )
+
+
+if __name__ == "__main__":
+    main()

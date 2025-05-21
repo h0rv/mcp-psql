@@ -17,14 +17,63 @@ cp .env.example .env
 $EDITOR .env
 ```
 
-Run in dev mode:
+## Running
+
+### Dev Mode (stdio)
 
 ```bash
 poe mcp-dev
 ```
 
+### Stdio
+
 Install to Claude Desktop:
 
 ```bash
 poe install-claude-desktop
+```
+
+Add to other clients:
+
+```json
+{
+  "mcpServers": {
+    "psql": {
+      "command": "/opt/homebrew/bin/uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]",
+        "--with-editable",
+        "/Users/robby/projects/mcp-psql",
+        "mcp",
+        "run",
+        "/Users/robby/projects/mcp-psql/server.py"
+      ],
+      "env": {
+        "DATABASE_URI": "postgresql://username:password@localhost/my-db"
+      }
+    }
+  }
+}
+```
+
+### SSE
+
+Run:
+
+```bash
+uv run --env-file .env server.py --transport sse
+```
+
+Add to client config:
+
+```json
+{
+  "mcpServers": {
+    "psql": {
+      "url": "http://localhost:8000/sse",
+    }
+ .}
+}
 ```
