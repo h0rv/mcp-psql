@@ -92,10 +92,7 @@ def add_schema_resources() -> None:
 add_schema_resources()
 
 
-@mcp.tool(
-    name="query",
-    description="Run a read-only SQL query",
-)
+@mcp.tool(description="Run a read-only SQL query")
 async def query(query: str) -> str:
     with conn.cursor() as cur:
         cur.execute("BEGIN TRANSACTION READ ONLY")  # TODO: is this right?
@@ -104,17 +101,16 @@ async def query(query: str) -> str:
         return str(result)
 
 
-@mcp.tool(
-    name="list_tables",
-    description="List all tables in the database",
-)
+@mcp.tool(description="List all tables in the database")
 async def list_tables() -> str:
     return str(conn.table_names)
 
 
-@mcp.tool(
-    name="get_table_schema",
-    description="Get the schema of a table in the database",
-)
+@mcp.tool(description="Get the schema of a table in the database")
 async def get_table_schema(table_name: str) -> str:
     return conn.get_table_schema(table_name)
+
+
+@mcp.tool(description="Get the schema of tables in the database")
+async def get_table_schemas(table_names: list[str]) -> str:
+    return [conn.get_table_schema(table_name) for table_name in table_names]
