@@ -35,6 +35,38 @@ class DatabaseConnection:
         # Forward all attribute access to the underlying connection
         return getattr(self.conn, name)
 
+    def get_table_names(self) -> list[str]:
+        with self.cursor() as cur:
+            cur.execute(
+                """
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'public'
+            """
+            )
+            return [row[0] for row in cur]
+
+    @property
+    def table_names(self) -> list[str]:
+        if not hasattr(self, "_table_names"):
+            with self.cursor() as cur:
+                cur.execute(
+                    """
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                    """
+                )
+                self._table_names = [row[0] for row in cur]
+        return self._table_names
+
+    def get_table_schema(self, table_name: str) -> str:
+        with self.cursor() as cur:
+            cur.execute(
+                f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table_name}'"
+            )
+            return str(cur.fetchall())
+
 
 conn = DatabaseConnection()
 
@@ -43,36 +75,18 @@ class TableSchemaResource(Resource):
     table_name: str
 
     async def read(self) -> str:
-        with conn.cursor() as cur:
-            cur.execute(
-                f"""\
-    SELECT column_name, data_type
-    FROM information_schema.columns
-    WHERE table_name = '{self.table_name}'
-    """
-            )
-            return str(cur.fetchall())
+        return conn.get_table_schema(self.table_name)
 
 
 def add_schema_resources() -> None:
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        """
-        )
-
-        for row in cur:
-            table_name = row[0]
-            mcp.add_resource(
-                TableSchemaResource(
-                    uri=f"resource://{table_name}/{SCHEMA_PATH}",
-                    name=f"'{table_name}' database schema",
-                    table_name=table_name,
-                )
+    for table_name in conn.table_names:
+        mcp.add_resource(
+            TableSchemaResource(
+                uri=f"resource://{table_name}/{SCHEMA_PATH}",
+                name=f"'{table_name}' database schema",
+                table_name=table_name,
             )
+        )
 
 
 add_schema_resources()
@@ -88,3 +102,19 @@ async def query(query: str) -> str:
         cur.execute(query)
         result = cur.fetchall()
         return str(result)
+
+
+@mcp.tool(
+    name="list_tables",
+    description="List all tables in the database",
+)
+async def list_tables() -> str:
+    return str(conn.table_names)
+
+
+@mcp.tool(
+    name="get_table_schema",
+    description="Get the schema of a table in the database",
+)
+async def get_table_schema(table_name: str) -> str:
+    return conn.get_table_schema(table_name)

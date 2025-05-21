@@ -4,7 +4,13 @@ Based off of the official TypeScript implementation server: https://github.com/m
 
 ## Setup
 
-Add your database URI
+Install deps
+
+```bash
+uv sync --frozen --all-groups
+```
+
+Add your Postgres database URI:
 
 ```bash
 cp .env.example .env
@@ -14,12 +20,11 @@ $EDITOR .env
 Run in dev mode:
 
 ```bash
-source .env
-uv run mcp dev server.py
+poe mcp-dev
 ```
 
 Install to Claude Desktop:
 
 ```bash
-uv run mcp install --editable --env-file .env server.py
+poe install-claude-desktop
 ```
