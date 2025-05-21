@@ -1,0 +1,32 @@
+[project]
+name = "mcp-psql"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.9.0",
+    "psycopg[binary,pool]>=3.2.9",
+]
+
+[dependency-groups]
+dev = [
+    "poethepoet>=0.34.0",
+    "ruff>=0.11.10",
+]
+test = [
+    "pytest>0",
+]
+
+[tool.poe.tasks]
+
+format = "ruff format ${PWD}"
+lint = "ruff check --fix ${PWD}"
+test = "pytest ${PWD}"
+all = [{ ref = "format" }, { ref = "lint" }, { ref = "test" }]
+
+[tool.poe.tasks.mcp-dev]
+shell = "uv run --env-file .env mcp dev server.py"
+
+[tool.poe.tasks.install-claude-desktop]
+shell = "uv run mcp install --with-editable . --env-file .env server.py"
