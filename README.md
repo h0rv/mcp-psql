@@ -74,6 +74,6 @@ Add to client config:
     "psql": {
       "url": "http://localhost:8000/sse",
     }
- .}
+  }
 }
 ```
